@@ -1,21 +1,41 @@
 import com.google.gson.GsonBuilder;
 
+import java.security.Security;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NoobChain {
 
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
+    //list of all unspent transactions. <output id, output>
+    public static HashMap<String, TransactionOutput> UTXOs = new HashMap<>();
+
     public static int difficulty = 5;
+    public static float minimumTransaction = 0.1f;
+    public static Wallet walletA;
+    public static Wallet walletB;
 
     public static void main(String[] args) {
 
-        //add our blocks to the blockchain ArrayList:
-        blockchain.add(new Block("Hi im the first block", "0"));
-        blockchain.add(new Block("Yo im the second block",blockchain.get(blockchain.size()-1).hash));
-        blockchain.add(new Block("Hey im the third block",blockchain.get(blockchain.size()-1).hash));
+        //Setup Bouncey castle as a Security Provider
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
-        String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-        System.out.println("blockchainJson: " + blockchainJson);
+        //Create the new wallets
+        walletA = new Wallet();
+        walletB = new Wallet();
+
+        //Test public and private keys
+        System.out.println("Private and public keys:");
+        System.out.println("walletA.privateKey: " + StringUtil.getStringFromKey(walletA.privateKey));
+        System.out.println("walletA.publicKey: " + StringUtil.getStringFromKey(walletA.publicKey));
+
+        //Create a test transaction from WalletA to walletB
+        Transaction transaction = new Transaction(walletA.publicKey, walletB.publicKey, 5, null);
+
+        transaction.generateSignature(walletA.privateKey);
+        //Verify the signature works and verify it from the public key
+        System.out.println("Is signature verified");
+        System.out.println(transaction.verifiySignature());
 
     }
 
